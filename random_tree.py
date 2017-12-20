@@ -21,27 +21,29 @@ def choose_attribute(dataset, attributes):  # Information Gain (ID3)
     max_gain = 0.0
     max_part_datasets = []
     max_attr = ''
+    max_sp = None
     info_d = info(dataset)
     for attr in attributes.keys():
         if attributes[attr] == 'numerical':
             dataset = dataset.sort_values(attr)
-            values = list(dataset[attr])
+            values = list(map(float, dataset[attr]))
             classes = list(dataset['y'])
             possible_split_points = []
             for i in range(len(values) - 1):
                 if classes[i] != classes[i + 1]:
                     possible_split_points.append(
                         (values[i] + values[i + 1]) / 2.0)
-
+            max_sp = 0.0
             for sp in possible_split_points:
                 part_datasets = []
                 part_datasets.append(dataset[dataset[attr] <= sp])
                 part_datasets.append(dataset[dataset[attr] > sp])
-            gain = info_d - info_a(dataset, part_datasets)
-            if gain > max_gain:
-                max_gain = gain
-                max_part_datasets = part_datasets
-                max_attr = attr
+                gain = info_d - info_a(dataset, part_datasets)
+                if gain > max_gain:
+                    max_gain = gain
+                    max_part_datasets = part_datasets
+                    max_attr = attr
+                    max_sp = sp
 
         else:  # categorical or binary
             part_datasets = []
@@ -52,8 +54,8 @@ def choose_attribute(dataset, attributes):  # Information Gain (ID3)
                 max_gain = gain
                 max_part_datasets = part_datasets
                 max_attr = attr
-
-    return max_attr, max_part_datasets
+                max_sp = None
+    return max_attr, max_sp, max_part_datasets
 
 
 def gen_random_tree(dataset, attributes):
@@ -63,6 +65,7 @@ def gen_random_tree(dataset, attributes):
     """
     N = Node()
     N.info = info(dataset)
+    N.instances = len(dataset)
     if len(set(dataset['y'])) == 1:  # all examples have the same class
         N.y = list(dataset['y'])[0]
         N.attr = 'y'
@@ -72,10 +75,12 @@ def gen_random_tree(dataset, attributes):
         N.attr = 'y'
         return N
     else:
-        A, part_datasets = choose_attribute(dataset, attributes)
+        A, max_sp, part_datasets = choose_attribute(dataset, attributes)
+        N.sp = max_sp
         N.attr = A
         next_attributes = attributes.copy()
         del next_attributes[A]
+        i = 0
         for dataset_v in part_datasets:
             if len(dataset_v) == 0:
                 N.y = dataset['y'].value_counts().idxmax()
@@ -83,8 +88,13 @@ def gen_random_tree(dataset, attributes):
                 return N
             else:
                 child_n = gen_random_tree(dataset_v, next_attributes)
-                child_n.attr_value = dataset_v[A].value_counts().idxmax()
+                if max_sp:
+                    N.sp_side = ("<=" if i == 0 else ">")
+                    child_n.attr_value = ("Yes" if i == 0 else "No")
+                else:
+                    child_n.attr_value = dataset_v[A].value_counts().idxmax()
                 N.children.append(child_n)
+            i += 1
         return N
 
 
@@ -93,7 +103,7 @@ class RandomTree:
     def __init__(self, dataset, attributes):
         self.random_tree = gen_random_tree(dataset, attributes)
 
-    def print_tree(self): #TODO: make print_tree prettier
+    def print_tree(self):  # TODO: make print_tree prettier
         queue = [[self.random_tree, 0]]
         while queue:
             q = queue.pop()
@@ -103,18 +113,24 @@ class RandomTree:
             for C in N.children:
                 queue.append([C, tabs + 1])
 
+    def eval(self, instance):
+        pass
+
 
 class Node:
 
     def __init__(self):
         self.attr_value = "Root"
         self.attr = None
+        self.sp = None
+        self.sp_side = None
         self.y = None
         self.children = []
         self.info = 0.0
+        self.instances = 0
 
     def __str__(self):
-        return "%s %s %s" % (self.attr_value, ("y=" + str(self.y) if self.y else self.attr), self.info)
+        return "%s %s %s %s" % (self.attr_value, ("y=" + str(self.y) if self.y else (self.attr + self.sp_side + str(self.sp) if self.sp_side else self.attr)), self.info, self.instances)
 
 
 if __name__ == "__main__":
@@ -126,8 +142,10 @@ if __name__ == "__main__":
         for row in breader:
             m.append(row)
     attributes = {x: 'categorical' for x in m[0][:-1]}
+    attributes['Graus'] = 'numerical'
     attributes_names = m[0][:-1]
     del m[0]
     dataset = pd.DataFrame(m, columns=attributes_names + ['y'])
+    dataset['Graus'] = dataset['Graus'].astype('float32')
     RT = RandomTree(dataset, attributes)
     RT.print_tree()
