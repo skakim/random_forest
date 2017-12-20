@@ -21,7 +21,7 @@ def choose_attribute(dataset, attributes):  # Information Gain (ID3)
     max_gain = 0.0
     max_part_datasets = []
     max_attr = ''
-    max_sp = None
+    max_sp = 0.0
     info_d = info(dataset)
     for attr in attributes.keys():
         if attributes[attr] == 'numerical':
@@ -33,24 +33,22 @@ def choose_attribute(dataset, attributes):  # Information Gain (ID3)
                 if classes[i] != classes[i + 1]:
                     possible_split_points.append(
                         (values[i] + values[i + 1]) / 2.0)
-            max_sp = 0.0
             for sp in possible_split_points:
                 part_datasets = []
                 part_datasets.append(dataset[dataset[attr] <= sp])
                 part_datasets.append(dataset[dataset[attr] > sp])
                 gain = info_d - info_a(dataset, part_datasets)
-                if gain > max_gain:
+                if gain >= max_gain:
                     max_gain = gain
                     max_part_datasets = part_datasets
                     max_attr = attr
                     max_sp = sp
-
         else:  # categorical or binary
             part_datasets = []
             for v in set(dataset[attr]):
                 part_datasets.append(dataset[dataset[attr].isin([v])])
             gain = info_d - info_a(dataset, part_datasets)
-            if gain > max_gain:
+            if gain >= max_gain:
                 max_gain = gain
                 max_part_datasets = part_datasets
                 max_attr = attr
@@ -160,7 +158,7 @@ if __name__ == "__main__":
     import pandas as pd
     #benchmark
     m = []
-    with open('benchmark.csv') as bfile:
+    with open('datasets/benchmark/benchmark.csv') as bfile:
         breader = csv.reader(bfile, delimiter=';')
         for row in breader:
             m.append(row)
@@ -176,7 +174,7 @@ if __name__ == "__main__":
 
     #benchmark numerical
     m = []
-    with open('benchmark_numerical.csv') as bfile:
+    with open('datasets/benchmark/benchmark_numerical.csv') as bfile:
         breader = csv.reader(bfile, delimiter=';')
         for row in breader:
             m.append(row)
@@ -185,7 +183,7 @@ if __name__ == "__main__":
     attributes_names = m[0][:-1]
     del m[0]
     dataset = pd.DataFrame(m, columns=attributes_names + ['y'])
-    dataset['Graus'] = dataset['Graus'].astype('float32')
+    dataset['Graus'] = dataset['Graus'].astype('float64')
     RT = RandomTree(dataset, attributes)
     RT.print_tree()
 
