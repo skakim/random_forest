@@ -102,6 +102,7 @@ class RandomTree:
 
     def __init__(self, dataset, attributes):
         self.random_tree = gen_random_tree(dataset, attributes)
+        self.attributes = attributes
 
     def print_tree(self):  # TODO: make print_tree prettier
         queue = [[self.random_tree, 0]]
@@ -113,8 +114,29 @@ class RandomTree:
             for C in N.children:
                 queue.append([C, tabs + 1])
 
-    def eval(self, instance):
-        pass
+    def classify(self, instance, stdout=False):
+        N = self.random_tree
+        while(not(N.y)):
+            attr = N.attr
+            value = instance[attr]
+            typ = self.attributes[attr]
+            if typ == 'numerical':
+                if eval(str(value) + N.sp_side + str(N.sp)):
+                    if(stdout):
+                        print(str(value) + N.sp_side + str(N.sp), end=' -> ')
+                    N = N.children[0]
+                else:
+                    if(stdout):
+                        print("!(" + str(value) + N.sp_side + str(N.sp) + ")", end=' -> ')
+                    N = N.children[1]
+            else:
+                for C in N.children:
+                    if value == C.attr_value:
+                        if(stdout):
+                            print(attr + " == " + C.attr_value, end=' -> ')
+                        N = C
+        return N.y
+
 
 
 class Node:
@@ -148,6 +170,10 @@ if __name__ == "__main__":
     dataset = pd.DataFrame(m, columns=attributes_names + ['y'])
     RT = RandomTree(dataset, attributes)
     RT.print_tree()
+
+    print(RT.classify({'Tempo': 'Ensolarado', 'Temperatura': 'Quente', 'Umidade': 'Alta', 'Ventoso': 'Falso'},stdout=True))
+    print(RT.classify({'Tempo': 'Nublado', 'Temperatura': 'Quente', 'Umidade': 'Alta', 'Ventoso': 'Falso'},stdout=True))
+
     #benchmark numerical
     m = []
     with open('benchmark_numerical.csv') as bfile:
@@ -162,3 +188,6 @@ if __name__ == "__main__":
     dataset['Graus'] = dataset['Graus'].astype('float32')
     RT = RandomTree(dataset, attributes)
     RT.print_tree()
+
+    print(RT.classify({'Tempo': 'Ensolarado', 'Graus': 29.5, 'Umidade': 'Alta'},stdout=True))
+    print(RT.classify({'Tempo': 'Chuvoso', 'Graus': 12.5, 'Umidade': 'Alta'},stdout=True))
