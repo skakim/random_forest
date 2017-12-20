@@ -136,8 +136,21 @@ class Node:
 if __name__ == "__main__":
     import csv
     import pandas as pd
+    #benchmark
     m = []
     with open('benchmark.csv') as bfile:
+        breader = csv.reader(bfile, delimiter=';')
+        for row in breader:
+            m.append(row)
+    attributes = {x: 'categorical' for x in m[0][:-1]}
+    attributes_names = m[0][:-1]
+    del m[0]
+    dataset = pd.DataFrame(m, columns=attributes_names + ['y'])
+    RT = RandomTree(dataset, attributes)
+    RT.print_tree()
+    #benchmark numerical
+    m = []
+    with open('benchmark_numerical.csv') as bfile:
         breader = csv.reader(bfile, delimiter=';')
         for row in breader:
             m.append(row)
