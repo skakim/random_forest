@@ -1,7 +1,6 @@
 import pandas as pd
 from math import log2
 
-# WARNING: NOT TESTED YET
 
 def info(dataset):
     probs = dict(dataset.y.value_counts(normalize=True))
@@ -10,10 +9,11 @@ def info(dataset):
         acc += probs[atr] * log2(probs[atr])
     return -acc
 
+
 def info_a(dataset, part_datasets):
     acc = 0.0
     for dataset_v in part_datasets:
-        acc += ((len(dataset)/len(dataset_v))*info(dataset_v))
+        acc += ((len(dataset_v) / len(dataset)) * info(dataset_v))
     return acc
 
 
@@ -23,37 +23,37 @@ def choose_attribute(dataset, attributes):  # Information Gain (ID3)
     max_attr = ''
     info_d = info(dataset)
     for attr in attributes.keys():
-        if attributes(attr) == 'numerical':
+        if attributes[attr] == 'numerical':
             dataset = dataset.sort_values(attr)
             values = list(dataset[attr])
             classes = list(dataset['y'])
             possible_split_points = []
-            for i in range(len(values)-1):
-                if classes[i] != classes[i+1]:
-                    possible_split_points.append((values[i]+values[i+1])/2.0)
-            
+            for i in range(len(values) - 1):
+                if classes[i] != classes[i + 1]:
+                    possible_split_points.append(
+                        (values[i] + values[i + 1]) / 2.0)
+
             for sp in possible_split_points:
                 part_datasets = []
                 part_datasets.append(dataset[dataset[attr] <= sp])
                 part_datasets.append(dataset[dataset[attr] > sp])
-            gain = info_d - info_a(dataset,part_datasets)
+            gain = info_d - info_a(dataset, part_datasets)
             if gain > max_gain:
                 max_gain = gain
                 max_part_datasets = part_datasets
                 max_attr = attr
 
-                    
-        else: #categorical or binary
+        else:  # categorical or binary
             part_datasets = []
             for v in set(dataset[attr]):
-                part_datasets.append(dataset[dataset.A.isin([v])])
-            gain = info_d - info_a(dataset,part_datasets)
+                part_datasets.append(dataset[dataset[attr].isin([v])])
+            gain = info_d - info_a(dataset, part_datasets)
             if gain > max_gain:
                 max_gain = gain
                 max_part_datasets = part_datasets
                 max_attr = attr
-    
-    return max_attr,max_part_datasets
+
+    return max_attr, max_part_datasets
 
 
 def gen_random_tree(dataset, attributes):
@@ -62,23 +62,28 @@ def gen_random_tree(dataset, attributes):
     attributes: dict {attribute: type} type = numerical, categorical, binary
     """
     N = Node()
-    if len(set(dataset['y'])) == 1:  # all examples have the same attribute
-        N.y = dataset['y'][0]
+    N.info = info(dataset)
+    if len(set(dataset['y'])) == 1:  # all examples have the same class
+        N.y = list(dataset['y'])[0]
+        N.attr = 'y'
         return N
     elif len(attributes.keys()) == 0:  # attributes list is empty
         N.y = dataset['y'].value_counts().idxmax()
+        N.attr = 'y'
         return N
     else:
         A, part_datasets = choose_attribute(dataset, attributes)
-        N.y = A
+        N.attr = A
         next_attributes = attributes.copy()
         del next_attributes[A]
         for dataset_v in part_datasets:
             if len(dataset_v) == 0:
                 N.y = dataset['y'].value_counts().idxmax()
+                N.attr = 'y'
                 return N
             else:
                 child_n = gen_random_tree(dataset_v, next_attributes)
+                child_n.attr_value = dataset_v[A].value_counts().idxmax()
                 N.children.append(child_n)
         return N
 
@@ -88,9 +93,41 @@ class RandomTree:
     def __init__(self, dataset, attributes):
         self.random_tree = gen_random_tree(dataset, attributes)
 
+    def print_tree(self): #TODO: make print_tree prettier
+        queue = [[self.random_tree, 0]]
+        while queue:
+            q = queue.pop()
+            N = q[0]
+            tabs = q[1]
+            print("\t\t" * tabs, N)
+            for C in N.children:
+                queue.append([C, tabs + 1])
+
 
 class Node:
 
     def __init__(self):
+        self.attr_value = "Root"
+        self.attr = None
         self.y = None
         self.children = []
+        self.info = 0.0
+
+    def __str__(self):
+        return "%s %s %s" % (self.attr_value, ("y=" + str(self.y) if self.y else self.attr), self.info)
+
+
+if __name__ == "__main__":
+    import csv
+    import pandas as pd
+    m = []
+    with open('benchmark.csv') as bfile:
+        breader = csv.reader(bfile, delimiter=';')
+        for row in breader:
+            m.append(row)
+    attributes = {x: 'categorical' for x in m[0][:-1]}
+    attributes_names = m[0][:-1]
+    del m[0]
+    dataset = pd.DataFrame(m, columns=attributes_names + ['y'])
+    RT = RandomTree(dataset, attributes)
+    RT.print_tree()
