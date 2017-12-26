@@ -1,3 +1,4 @@
+import csv
 import pandas as pd
 from math import log2
 
@@ -125,7 +126,8 @@ class RandomTree:
                     N = N.children[0]
                 else:
                     if(stdout):
-                        print("!(" + str(value) + N.sp_side + str(N.sp) + ")", end=' -> ')
+                        print("!(" + str(value) + N.sp_side +
+                              str(N.sp) + ")", end=' -> ')
                     N = N.children[1]
             else:
                 for C in N.children:
@@ -134,7 +136,6 @@ class RandomTree:
                             print(attr + " == " + C.attr_value, end=' -> ')
                         N = C
         return N.y
-
 
 
 class Node:
@@ -154,9 +155,7 @@ class Node:
 
 
 if __name__ == "__main__":
-    import csv
-    import pandas as pd
-    #benchmark
+    # benchmark
     m = []
     with open('datasets/benchmark/benchmark.csv') as bfile:
         breader = csv.reader(bfile, delimiter=';')
@@ -169,10 +168,12 @@ if __name__ == "__main__":
     RT = RandomTree(dataset, attributes)
     RT.print_tree()
 
-    print(RT.classify({'Tempo': 'Ensolarado', 'Temperatura': 'Quente', 'Umidade': 'Alta', 'Ventoso': 'Falso'},stdout=True))
-    print(RT.classify({'Tempo': 'Nublado', 'Temperatura': 'Quente', 'Umidade': 'Alta', 'Ventoso': 'Falso'},stdout=True))
+    print(RT.classify({'Tempo': 'Ensolarado', 'Temperatura': 'Quente',
+                       'Umidade': 'Alta', 'Ventoso': 'Falso'}, stdout=True))
+    print(RT.classify({'Tempo': 'Nublado', 'Temperatura': 'Quente',
+                       'Umidade': 'Alta', 'Ventoso': 'Falso'}, stdout=True))
 
-    #benchmark numerical
+    # benchmark numerical
     m = []
     with open('datasets/benchmark/benchmark_numerical.csv') as bfile:
         breader = csv.reader(bfile, delimiter=';')
@@ -187,5 +188,7 @@ if __name__ == "__main__":
     RT = RandomTree(dataset, attributes)
     RT.print_tree()
 
-    print(RT.classify({'Tempo': 'Ensolarado', 'Graus': 29.5, 'Umidade': 'Alta'},stdout=True))
-    print(RT.classify({'Tempo': 'Chuvoso', 'Graus': 12.5, 'Umidade': 'Alta'},stdout=True))
+    print(RT.classify({'Tempo': 'Ensolarado',
+                       'Graus': 29.5, 'Umidade': 'Alta'}, stdout=True))
+    print(RT.classify({'Tempo': 'Chuvoso', 'Graus': 12.5,
+                       'Umidade': 'Alta'}, stdout=True))
