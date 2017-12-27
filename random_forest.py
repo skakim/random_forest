@@ -45,12 +45,14 @@ class RandomForest:
         self.random_forest = gen_random_forest(
             dataset, attributes, ntrees, nattributes)
         self.attributes = attributes
+        self.dataset = dataset
 
     def classify(self, instance, stdout=False):
         """
         :param instance: a instance
         :param stdout: if stdout == True, print voting result (para debug)
         return class
-        Look at random_tree classify, probably will be a loop calling rt.classify and return who wins the voting
+        Look at random_tree classify, probably will be a loop calling rt.classify for each RT and return who wins the voting
+        In case of a tie in the voting, use a coinflip between the 'y' values that have tied (random.choice?)
         """
         return 0
