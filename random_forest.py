@@ -1,6 +1,6 @@
 import random
 from random_tree import RandomTree
-
+from collections import Counter
 
 def select_attributes(dataset, attributes, nattributes):
     """
@@ -10,7 +10,7 @@ def select_attributes(dataset, attributes, nattributes):
     """
     selected_attributes = dict(random.sample(attributes.items(), nattributes))
     selected_dataset = dataset[list(selected_attributes.keys()) + ['y']]
-    return (selected_dataset, selected_attributes)
+    return selected_dataset, selected_attributes
 
 
 def bootstrap(dataset):
@@ -35,8 +35,7 @@ def gen_random_forest(dataset, attributes, ntrees, nattributes):
             rt = RandomTree(tree_dataset, tree_attributes)
             random_forest.append(rt)
     """
-    random_forest = []
-    return random_forest
+    return [RandomTree(*select_attributes(bootstrap(dataset), attributes, nattributes)) for _ in range(0, ntrees)]
 
 
 class RandomForest:
@@ -55,4 +54,5 @@ class RandomForest:
         Look at random_tree classify, probably will be a loop calling rt.classify for each RT and return who wins the voting
         In case of a tie in the voting, use a coinflip between the 'y' values that have tied (random.choice?)
         """
-        return 0
+        return Counter([tree.classify(instance, stdout) for tree in self.random_forest]).most_common(1)[0][0]
+

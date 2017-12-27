@@ -4,9 +4,10 @@ import numpy as np
 from statistics import mean, stdev
 import math
 import random
-#from random_forest import RandomForest
+# from random_forest import RandomForest
 from random_tree import RandomTree
 from argv_parser import parser
+from random_forest import RandomForest
 
 
 def read_dataset(dataset):
@@ -67,7 +68,8 @@ def read_dataset(dataset):
     elif dataset == 'cancer':
         # diagnosis: M-B (output)
         columns = ['id', 'y']
-        for name in ['radius', 'texture', 'perimeter', 'area', 'smoothness', 'compactness', 'concavity', 'concave_points', 'symmetry', 'fractal_dim']:
+        for name in ['radius', 'texture', 'perimeter', 'area', 'smoothness', 'compactness', 'concavity',
+                     'concave_points', 'symmetry', 'fractal_dim']:
             columns += [name + "_mean", name + "_stderror", name + "_worse"]
         data = pd.read_csv(
             "datasets/breast-cancer-wisconsin/wdbc.data", names=columns)
@@ -120,7 +122,7 @@ def cross_validation(dataset, attributes, percentage_train, folds, ntrees, nattr
     for fold in range(1, folds + 1):
         # print("Iteration",fold)
         train_dataset, test_dataset = holdout(dataset, percentage_train)
-        #rf = RandomForest(train_dataset, attributes, ntrees, nattributes)
+        # rf = RandomForest(train_dataset, attributes, ntrees, nattributes)
         accuracy, precision, recall = test_RF(None, test_dataset)
         accuracies.append(accuracy)
         precisions.append(precision)
@@ -149,7 +151,7 @@ def precision(cm):
             false_positive = sum(cm[:, i]) - cm[i, i]
             if true_positive + false_positive != 0.0:
                 p = true_positive / (true_positive + false_positive)
-                #print("precision\n", cm, true_positive,false_positive,p)
+                # print("precision\n", cm, true_positive,false_positive,p)
                 acc += p
         acc = acc / len(cm)
 
@@ -171,7 +173,7 @@ def recall(cm):
             false_negative = sum(cm[i, :]) - cm[i, i]
             if true_positive + false_negative != 0.0:
                 r = true_positive / (true_positive + false_negative)
-                #print("recall\n", cm, true_positive, false_negative, r)
+                # print("recall\n", cm, true_positive, false_negative, r)
                 acc += r
         acc = acc / len(cm)
     return acc
@@ -191,7 +193,7 @@ def test_RF(RF, test_dataset):
     for instance in test_dataset.values():
         # print(instance)
         expected = instance['y']
-        #y = RF.classify(instance)
+        # y = RF.classify(instance)
         y = 1
         confusion_matrix[classes.index(expected)][classes.index(y)] += 1
     # print(confusion_matrix)
@@ -235,12 +237,20 @@ if __name__ == "__main__":
 
     elif str(mode_parser.mode) == 'contraceptive':
         dataset, attributes = read_dataset('contraceptive')
+    else:
+        dataset, attributes = read_dataset('contraceptive')
 
+    forest = RandomForest(dataset, attributes, 10, 10)
+    for row in dataset:
+        print(row)
+
+    """
     n_trees = [1, 5, 10, 25, 50]
     for n in n_trees:
         print("#trees =", n)
         print_cross_validation(cross_validation(
             dataset, attributes, 0.8, 5, n))
+    """
 
     """
     #RandomTree debug only
