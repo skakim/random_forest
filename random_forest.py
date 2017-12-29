@@ -55,6 +55,8 @@ class RandomForest:
         In case of a tie in the voting, use a coinflip between the 'y' values that have tied (random.choice?)
         """
         votes = Counter([tree.classify(instance, stdout) for tree in self.random_forest])
+        if stdout:
+            print(votes)
         freq_list = votes.values()
         max_freq = max(freq_list)
         total_with_max = list(freq_list).count(max_freq)

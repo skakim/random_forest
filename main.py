@@ -121,8 +121,8 @@ def cross_validation(dataset, attributes, percentage_train, folds, ntrees, nattr
     for fold in range(1, folds + 1):
         # print("Iteration",fold)
         train_dataset, test_dataset = holdout(dataset, percentage_train)
-        # rf = RandomForest(train_dataset, attributes, ntrees, nattributes)
-        accuracy, precision, recall = test_RF(None, test_dataset)
+        rf = RandomForest(train_dataset, attributes, ntrees, nattributes)
+        accuracy, precision, recall = test_RF(rf, test_dataset)
         accuracies.append(accuracy)
         precisions.append(precision)
         recalls.append(recall)
@@ -192,8 +192,7 @@ def test_RF(RF, test_dataset):
     for instance in test_dataset.values():
         # print(instance)
         expected = instance['y']
-        # y = RF.classify(instance)
-        y = 1
+        y = RF.classify(instance)
         confusion_matrix[classes.index(expected)][classes.index(y)] += 1
     # print(confusion_matrix)
     return (accuracy(confusion_matrix, number_of_instances),
@@ -235,8 +234,6 @@ if __name__ == "__main__":
         dataset, attributes = read_dataset('cancer')
 
     elif str(mode_parser.mode) == 'contraceptive':
-        dataset, attributes = read_dataset('contraceptive')
-    else:
         dataset, attributes = read_dataset('contraceptive')
 
     """

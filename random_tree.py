@@ -22,7 +22,7 @@ def choose_attribute(dataset, attributes):  # Information Gain (ID3)
     max_gain = 0.0
     max_part_datasets = []
     max_attr = ''
-    max_sp = 0.0
+    max_sp = None
     info_d = info(dataset)
     for attr in attributes.keys():
         if attributes[attr] == 'numerical':
@@ -31,7 +31,7 @@ def choose_attribute(dataset, attributes):  # Information Gain (ID3)
             classes = list(dataset['y'])
             possible_split_points = []
             for i in range(len(values) - 1):
-                if classes[i] != classes[i + 1]:
+                if classes[i] != classes[i + 1] and values[i] != values[i+1]:
                     possible_split_points.append(
                         (values[i] + values[i + 1]) / 2.0)
             for sp in possible_split_points:
@@ -75,6 +75,10 @@ def gen_random_tree(dataset, attributes):
         return N
     else:
         A, max_sp, part_datasets = choose_attribute(dataset, attributes)
+        if A == '':
+            N.y = dataset['y'].value_counts().idxmax()
+            N.attr = 'y'
+            return N 
         N.sp = max_sp
         N.attr = A
         next_attributes = attributes.copy()
@@ -87,7 +91,7 @@ def gen_random_tree(dataset, attributes):
                 return N
             else:
                 child_n = gen_random_tree(dataset_v, next_attributes)
-                if max_sp:
+                if max_sp != None:
                     N.sp_side = ("<=" if i == 0 else ">")
                     child_n.attr_value = ("Yes" if i == 0 else "No")
                 else:
