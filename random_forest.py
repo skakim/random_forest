@@ -54,5 +54,9 @@ class RandomForest:
         Look at random_tree classify, probably will be a loop calling rt.classify for each RT and return who wins the voting
         In case of a tie in the voting, use a coinflip between the 'y' values that have tied (random.choice?)
         """
-        return Counter([tree.classify(instance, stdout) for tree in self.random_forest]).most_common(1)[0][0]
+        votes = Counter([tree.classify(instance, stdout) for tree in self.random_forest])
+        freq_list = votes.values()
+        max_freq = max(freq_list)
+        total_with_max = list(freq_list).count(max_freq)
+        return random.choice(votes.most_common(total_with_max))[0]
 

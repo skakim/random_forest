@@ -4,7 +4,6 @@ import numpy as np
 from statistics import mean, stdev
 import math
 import random
-# from random_forest import RandomForest
 from random_tree import RandomTree
 from argv_parser import parser
 from random_forest import RandomForest
@@ -240,17 +239,17 @@ if __name__ == "__main__":
     else:
         dataset, attributes = read_dataset('contraceptive')
 
+    """
     forest = RandomForest(dataset, attributes, 10, 10)
     for row in dataset:
         print(row)
-
     """
+    print(mode_parser.mode)
     n_trees = [1, 5, 10, 25, 50]
     for n in n_trees:
         print("#trees =", n)
         print_cross_validation(cross_validation(
             dataset, attributes, 0.8, 5, n))
-    """
 
     """
     #RandomTree debug only
