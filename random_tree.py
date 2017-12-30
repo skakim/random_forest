@@ -108,8 +108,8 @@ def gen_random_tree(dataset, attributes, depth_limit, depth=1):
 
 class RandomTree:
 
-    def __init__(self, dataset, attributes, depth_limit):
-        self.random_tree = gen_random_tree(dataset, attributes, depth_limit)
+    def __init__(self, dataset, attributes, depth_limit=None):
+        self.random_tree = gen_random_tree(dataset, attributes, depth_limit=depth_limit)
         self.attributes = attributes
 
     def print_tree(self):  # TODO: make print_tree prettier
