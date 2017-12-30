@@ -126,11 +126,11 @@ class RandomTree:
             if typ == 'numerical':
                 if eval(str(value) + N.sp_side + str(N.sp)):
                     if(stdout):
-                        print(str(value) + N.sp_side + str(N.sp), end=' -> ')
+                        print(attr, str(value) + N.sp_side + str(N.sp), end=' -> ')
                     N = N.children[0]
                 else:
                     if(stdout):
-                        print("!(" + str(value) + N.sp_side +
+                        print(attr, "!(" + str(value) + N.sp_side +
                               str(N.sp) + ")", end=' -> ')
                     N = N.children[1]
             else:
@@ -139,6 +139,8 @@ class RandomTree:
                         if(stdout):
                             print(attr + " == " + C.attr_value, end=' -> ')
                         N = C
+        if(stdout):
+            print("y =",N.y)
         return N.y
 
 

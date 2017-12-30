@@ -57,6 +57,6 @@ class RandomForest:
         votes = Counter([tree.classify(instance, stdout) for tree in self.random_forest]).most_common()
         votes = [vote for vote in votes if vote[1] == votes[0][1]]
         if stdout:
-            print(votes)
+            print(Counter([tree.classify(instance, stdout) for tree in self.random_forest]))
         return random.choice(votes)[0]
 
