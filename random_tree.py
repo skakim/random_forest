@@ -31,7 +31,7 @@ def choose_attribute(dataset, attributes):  # Information Gain (ID3)
             classes = list(dataset['y'])
             possible_split_points = []
             for i in range(len(values) - 1):
-                if classes[i] != classes[i + 1] and values[i] != values[i+1]:
+                if classes[i] != classes[i + 1]:
                     possible_split_points.append(
                         (values[i] + values[i + 1]) / 2.0)
             for sp in possible_split_points:
