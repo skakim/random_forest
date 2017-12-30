@@ -247,10 +247,10 @@ if __name__ == "__main__":
         print("#trees =", n)
         print("depth_limit")
         print_cross_validation(cross_validation(
-            dataset, attributes, 0.9, 5, n, depth_limit=10))
+            dataset, attributes, 0.8, 5, n, depth_limit=10))
         print("no depth_limit")
         print_cross_validation(cross_validation(
-            dataset, attributes, 0.9, 5, n))
+            dataset, attributes, 0.8, 5, n))
 
     """
     #RandomTree debug only
