@@ -21,7 +21,7 @@ def bootstrap(dataset):
     return dataset.sample(n=len(dataset), replace=True)
 
 
-def gen_random_forest(dataset, attributes, ntrees, nattributes):
+def gen_random_forest(dataset, attributes, ntrees, nattributes, depth_limit=None):
     """
     :param dataset: the dataset dataframe
     :param attributes: the attributes dict
@@ -35,14 +35,14 @@ def gen_random_forest(dataset, attributes, ntrees, nattributes):
             rt = RandomTree(tree_dataset, tree_attributes)
             random_forest.append(rt)
     """
-    return [RandomTree(*select_attributes(bootstrap(dataset), attributes, nattributes)) for _ in range(0, ntrees)]
+    return [RandomTree(*select_attributes(bootstrap(dataset), attributes, nattributes),depth_limit=depth_limit) for _ in range(0, ntrees)]
 
 
 class RandomForest:
 
-    def __init__(self, dataset, attributes, ntrees, nattributes):
+    def __init__(self, dataset, attributes, ntrees, nattributes, depth_limit):
         self.random_forest = gen_random_forest(
-            dataset, attributes, ntrees, nattributes)
+            dataset, attributes, ntrees, nattributes, depth_limit=depth_limit)
         self.attributes = attributes
         self.dataset = dataset
 

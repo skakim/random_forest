@@ -102,7 +102,7 @@ def holdout(dataset, percentage_train):
     return (train_dataset, test_dataset)
 
 
-def cross_validation(dataset, attributes, percentage_train, folds, ntrees, nattributes=-1):
+def cross_validation(dataset, attributes, percentage_train, folds, ntrees, nattributes=-1, depth_limit=None):
     """
     :param dataset: the full dataset
     :param attributes: the attributes
@@ -121,7 +121,7 @@ def cross_validation(dataset, attributes, percentage_train, folds, ntrees, nattr
     for fold in range(1, folds + 1):
         # print("Iteration",fold)
         train_dataset, test_dataset = holdout(dataset, percentage_train)
-        rf = RandomForest(train_dataset, attributes, ntrees, nattributes)
+        rf = RandomForest(train_dataset, attributes, ntrees, nattributes, depth_limit)
         accuracy, precision, recall = test_RF(rf, test_dataset)
         accuracies.append(accuracy)
         precisions.append(precision)
@@ -189,7 +189,6 @@ def test_RF(RF, test_dataset):
     confusion_matrix = [[0.0] * len(classes) for _ in range(len(classes))]
     test_dataset = test_dataset.transpose().to_dict()
     number_of_instances = len(test_dataset)
-    # [x.print_tree() for x in RF.random_forest]
     for instance in test_dataset.values():
         expected = instance['y']
         # print(instance)
@@ -246,8 +245,12 @@ if __name__ == "__main__":
     n_trees = [1, 5, 10, 25, 50]
     for n in n_trees:
         print("#trees =", n)
+        print("depth_limit")
         print_cross_validation(cross_validation(
-            dataset, attributes, 0.8, 10, n))
+            dataset, attributes, 0.9, 5, n, depth_limit=10))
+        print("no depth_limit")
+        print_cross_validation(cross_validation(
+            dataset, attributes, 0.9, 5, n))
 
     """
     #RandomTree debug only

@@ -57,7 +57,7 @@ def choose_attribute(dataset, attributes):  # Information Gain (ID3)
     return max_attr, max_sp, max_part_datasets
 
 
-def gen_random_tree(dataset, attributes):
+def gen_random_tree(dataset, attributes, depth_limit, depth=1):
     """
     dataset: pandas dataframe  
     attributes: dict {attribute: type} type = numerical, categorical, binary
@@ -73,6 +73,10 @@ def gen_random_tree(dataset, attributes):
         N.y = dataset['y'].value_counts().idxmax()
         N.attr = 'y'
         return N
+    elif (depth_limit != None) and depth == depth_limit:  # depth_limit reached
+        N.y = dataset['y'].value_counts().idxmax()
+        N.attr = 'y'
+        return N
     else:
         A, max_sp, part_datasets = choose_attribute(dataset, attributes)
         if A == '':
@@ -82,7 +86,8 @@ def gen_random_tree(dataset, attributes):
         N.sp = max_sp
         N.attr = A
         next_attributes = attributes.copy()
-        del next_attributes[A]
+        if depth_limit == None or attributes[A] != 'numerical':
+            del next_attributes[A]
         i = 0
         for dataset_v in part_datasets:
             if len(dataset_v) == 0:
@@ -90,7 +95,7 @@ def gen_random_tree(dataset, attributes):
                 N.attr = 'y'
                 return N
             else:
-                child_n = gen_random_tree(dataset_v, next_attributes)
+                child_n = gen_random_tree(dataset_v, next_attributes, depth_limit, depth=depth+1)
                 if max_sp != None:
                     N.sp_side = ("<=" if i == 0 else ">")
                     child_n.attr_value = ("Yes" if i == 0 else "No")
@@ -103,8 +108,8 @@ def gen_random_tree(dataset, attributes):
 
 class RandomTree:
 
-    def __init__(self, dataset, attributes):
-        self.random_tree = gen_random_tree(dataset, attributes)
+    def __init__(self, dataset, attributes, depth_limit):
+        self.random_tree = gen_random_tree(dataset, attributes, depth_limit)
         self.attributes = attributes
 
     def print_tree(self):  # TODO: make print_tree prettier
