@@ -193,7 +193,7 @@ def test_RF(RF, test_dataset):
     for instance in test_dataset.values():
         expected = instance['y']
         # print(instance)
-        y = RF.classify(instance,stdout=True)
+        y = RF.classify(instance)
         confusion_matrix[classes.index(expected)][classes.index(y)] += 1
     # print(confusion_matrix)
     return (accuracy(confusion_matrix, number_of_instances),
