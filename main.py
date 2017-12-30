@@ -189,11 +189,10 @@ def test_RF(RF, test_dataset):
     confusion_matrix = [[0.0] * len(classes) for _ in range(len(classes))]
     test_dataset = test_dataset.transpose().to_dict()
     number_of_instances = len(test_dataset)
-    [x.print_tree() for x in RF.random_forest]
+    # [x.print_tree() for x in RF.random_forest]
     for instance in test_dataset.values():
-        # print(instance)
         expected = instance['y']
-        print(instance)
+        # print(instance)
         y = RF.classify(instance,stdout=True)
         confusion_matrix[classes.index(expected)][classes.index(y)] += 1
     # print(confusion_matrix)
