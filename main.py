@@ -24,7 +24,7 @@ def read_dataset(dataset):
         # survival (output)
         columns = ['age', 'year', 'aux_nodes', 'y']
         data = pd.read_csv("datasets/haberman/haberman.data", names=columns)
-        attrs = {x: 'numerical' for x in columns}
+        attrs = {x: ['numerical'] for x in columns}
         del attrs['y']
 
     elif dataset == 'wine':
@@ -45,7 +45,7 @@ def read_dataset(dataset):
         columns = ['y', 'alcohol', 'malic', 'ash', 'alcal', 'magnes', 'phenols',
                    'flavan', 'n-flavan', 'prc', 'color', 'hue', 'od', 'proline']
         data = pd.read_csv("datasets/wine/wine.data", names=columns)
-        attrs = {x: 'numerical' for x in columns}
+        attrs = {x: ['numerical'] for x in columns}
         del attrs['y']
 
     elif dataset == 'contraceptive':
@@ -62,19 +62,20 @@ def read_dataset(dataset):
         columns = ['wage', 'weduc', 'heduc', 'child', 'wrelig',
                    'wwork', 'hoccup', 'sol', 'mexp', 'y']
         data = pd.read_csv("datasets/cmc/cmc.data", names=columns)
-        attrs = {'wage': 'numerical', 'weduc': 'categorical', 'heduc': 'categorical', 'child': 'numerical',
-                 'wrelig': 'binary', 'wwork': 'binary', 'hoccup': 'categorical', 'sol': 'categorical', 'mexp': 'binary'}
+        attrs = {'wage': ['numerical'], 'weduc': ['categorical', data['weduc'].unique()], 'heduc': ['categorical', data['heduc'].unique()], 'child': ['numerical'],
+                 'wrelig': ['binary', data['wrelig'].unique()], 'wwork': ['binary', data['wwork'].unique()], 'hoccup': ['categorical', data['hoccup'].unique()], 
+                 'sol': ['categorical', data['sol'].unique()], 'mexp': ['binary', data['mexp'].unique()]}
 
     elif dataset == 'cancer':
         # diagnosis: M-B (output)
-        columns = ['id', 'y']
+        columns= ['id', 'y']
         for name in ['radius', 'texture', 'perimeter', 'area', 'smoothness', 'compactness', 'concavity',
                      'concave_points', 'symmetry', 'fractal_dim']:
             columns += [name + "_mean", name + "_stderror", name + "_worse"]
-        data = pd.read_csv(
+        data= pd.read_csv(
             "datasets/breast-cancer-wisconsin/wdbc.data", names=columns)
         del data['id']
-        attrs = {x: 'numerical' for x in columns}
+        attrs = {x: ['numerical'] for x in columns}
         del attrs['y']
         del attrs['id']
 
@@ -194,8 +195,9 @@ def test_RF(RF, test_dataset):
     for instance in test_dataset.values():
         expected = instance['y']
         print(instance)
-        y = RF.classify(instance,stdout=True)
-        confusion_matrix[classes.index(expected)][classes.index(y)] += 1
+        y = RF.classify(instance,stdout=False)
+        if y != None:
+            confusion_matrix[classes.index(expected)][classes.index(y)] += 1
     print(confusion_matrix, accuracy(confusion_matrix, number_of_instances),
             precision(confusion_matrix),
             recall(confusion_matrix))
@@ -221,10 +223,12 @@ if __name__ == "__main__":
             breader = csv.reader(bfile, delimiter=';')
             for row in breader:
                 m.append(row)
-        attributes = {x: 'categorical' for x in m[0][:-1]}
+        attributes = {x: ['categorical'] for x in m[0][:-1]}
         attributes_names = m[0][:-1]
         del m[0]
         dataset = pd.DataFrame(m, columns=attributes_names + ['y'])
+        for x in attributes.keys():
+            attributes[x].append(dataset[x].unique())
         RT = RandomTree(dataset, attributes)
         RT.print_tree()
         sys.exit()
@@ -247,18 +251,18 @@ if __name__ == "__main__":
         print(row)
     """
     print(mode_parser.mode)
-    n_trees = [5]
+    n_trees = [50]
     for n in n_trees:
         print("#trees =", n)
-        #print("depth_limit")
-        #print_cross_validation(cross_validation(
+        # print("depth_limit")
+        # print_cross_validation(cross_validation(
         #    dataset, attributes, 0.8, 5, n, depth_limit=10))
-        #print("no depth_limit")
+        # print("no depth_limit")
         print_cross_validation(cross_validation(
-            dataset, attributes, 0.99, 1, n))
+            dataset, attributes, 0.8, 1, n))
 
     """
-    #RandomTree debug only
+    # RandomTree debug only
     dataset, attributes = read_dataset('survival')
     RT = RandomTree(dataset, attributes)
     RT.print_tree()

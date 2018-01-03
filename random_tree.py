@@ -24,8 +24,9 @@ def choose_attribute(dataset, attributes):  # Information Gain (ID3)
     max_attr = ''
     max_sp = None
     info_d = info(dataset)
+    attr_values = []
     for attr in attributes.keys():
-        if attributes[attr] == 'numerical':
+        if attributes[attr][0] == 'numerical':
             dataset = dataset.sort_values(attr)
             values = list(map(float, dataset[attr]))
             classes = list(dataset['y'])
@@ -39,28 +40,32 @@ def choose_attribute(dataset, attributes):  # Information Gain (ID3)
                 part_datasets.append(dataset[dataset[attr] <= sp])
                 part_datasets.append(dataset[dataset[attr] > sp])
                 gain = info_d - info_a(dataset, part_datasets)
-                if gain >= max_gain:
+                if gain > max_gain:
                     max_gain = gain
                     max_part_datasets = part_datasets
                     max_attr = attr
                     max_sp = sp
+                    attr_values = ["Yes", "No"]
         else:  # categorical or binary
             part_datasets = []
-            for v in set(dataset[attr]):
+            temp = []
+            for v in attributes[attr][1]:
                 part_datasets.append(dataset[dataset[attr].isin([v])])
+                temp.append(v)
             gain = info_d - info_a(dataset, part_datasets)
-            if gain >= max_gain:
+            if gain > max_gain:
                 max_gain = gain
                 max_part_datasets = part_datasets
                 max_attr = attr
                 max_sp = None
-    return max_attr, max_sp, max_part_datasets
+                attr_values = temp
+    return max_attr, max_sp, max_part_datasets, attr_values
 
 
 def gen_random_tree(dataset, attributes, depth_limit, depth=1):
     """
     dataset: pandas dataframe  
-    attributes: dict {attribute: type} type = numerical, categorical, binary
+    attributes: dict {attribute: [type,possible_values]} type = numerical, categorical, binary
     """
     N = Node()
     N.info = info(dataset)
@@ -78,7 +83,7 @@ def gen_random_tree(dataset, attributes, depth_limit, depth=1):
         N.attr = 'y'
         return N
     else:
-        A, max_sp, part_datasets = choose_attribute(dataset, attributes)
+        A, max_sp, part_datasets, attr_values = choose_attribute(dataset, attributes)
         if A == '':
             N.y = dataset['y'].value_counts().idxmax()
             N.attr = 'y'
@@ -86,14 +91,16 @@ def gen_random_tree(dataset, attributes, depth_limit, depth=1):
         N.sp = max_sp
         N.attr = A
         next_attributes = attributes.copy()
-        if depth_limit == None or attributes[A] != 'numerical':
+        if depth_limit == None or attributes[A][0] != 'numerical':
             del next_attributes[A]
         i = 0
         for dataset_v in part_datasets:
             if len(dataset_v) == 0:
-                N.y = dataset['y'].value_counts().idxmax()
-                N.attr = 'y'
-                return N
+                child_n = Node()
+                child_n.attr_value = attr_values[i]
+                child_n.y = dataset['y'].value_counts().idxmax()
+                child_n.attr = 'y'
+                N.children.append(child_n)
             else:
                 child_n = gen_random_tree(dataset_v, next_attributes, depth_limit, depth=depth+1)
                 if max_sp != None:
@@ -125,9 +132,10 @@ class RandomTree:
     def classify(self, instance, stdout=False):
         N = self.random_tree
         while(not(N.y)):
+            prev_N = N
             attr = N.attr
             value = instance[attr]
-            typ = self.attributes[attr]
+            typ = self.attributes[attr][0]
             if typ == 'numerical':
                 if eval(str(value) + N.sp_side + str(N.sp)):
                     if(stdout):
@@ -142,8 +150,13 @@ class RandomTree:
                 for C in N.children:
                     if value == C.attr_value:
                         if(stdout):
-                            print(attr + " == " + C.attr_value, end=' -> ')
+                            print(str(attr) + " == " + str(C.attr_value), end=' -> ')
                         N = C
+                        break
+                if prev_N == N:
+                    if stdout:
+                        print("A tree couldn\'t classify this instance")
+                    return None
         if(stdout):
             print("y =",N.y)
         return N.y
@@ -172,10 +185,12 @@ if __name__ == "__main__":
         breader = csv.reader(bfile, delimiter=';')
         for row in breader:
             m.append(row)
-    attributes = {x: 'categorical' for x in m[0][:-1]}
+    attributes = {x: ['categorical'] for x in m[0][:-1]}
     attributes_names = m[0][:-1]
     del m[0]
     dataset = pd.DataFrame(m, columns=attributes_names + ['y'])
+    for x in attributes.keys():
+        attributes[x].append(dataset[x].unique())
     RT = RandomTree(dataset, attributes)
     RT.print_tree()
 
@@ -190,12 +205,15 @@ if __name__ == "__main__":
         breader = csv.reader(bfile, delimiter=';')
         for row in breader:
             m.append(row)
-    attributes = {x: 'categorical' for x in m[0][:-1]}
-    attributes['Graus'] = 'numerical'
+    attributes = {x: ['categorical'] for x in m[0][:-1]}
+    attributes['Graus'] = ['numerical']
     attributes_names = m[0][:-1]
     del m[0]
     dataset = pd.DataFrame(m, columns=attributes_names + ['y'])
     dataset['Graus'] = dataset['Graus'].astype('float64')
+    for x in attributes.keys():
+        if x != 'Graus':
+            attributes[x].append(dataset[x].unique())
     RT = RandomTree(dataset, attributes)
     RT.print_tree()
 

@@ -55,8 +55,8 @@ class RandomForest:
         In case of a tie in the voting, use a coinflip between the 'y' values that have tied (random.choice?)
         """
         votes = Counter([tree.classify(instance, stdout) for tree in self.random_forest]).most_common()
+	#if stdout:
+        print(votes)
         votes = [vote for vote in votes if vote[1] == votes[0][1]]
-        if stdout:
-            print(Counter([tree.classify(instance) for tree in self.random_forest]))
         return random.choice(votes)[0]
 
