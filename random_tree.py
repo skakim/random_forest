@@ -35,11 +35,14 @@ def choose_attribute(dataset, attributes):  # Information Gain (ID3)
                 if classes[i] != classes[i + 1]:
                     possible_split_points.append(
                         (values[i] + values[i + 1]) / 2.0)
+            #print(dataset)
+            #print(attr, possible_split_points)
             for sp in possible_split_points:
                 part_datasets = []
                 part_datasets.append(dataset[dataset[attr] <= sp])
                 part_datasets.append(dataset[dataset[attr] > sp])
                 gain = info_d - info_a(dataset, part_datasets)
+                #print(sp, info_d, info_a(dataset, part_datasets), gain)
                 if gain > max_gain:
                     max_gain = gain
                     max_part_datasets = part_datasets
@@ -59,6 +62,9 @@ def choose_attribute(dataset, attributes):  # Information Gain (ID3)
                 max_attr = attr
                 max_sp = None
                 attr_values = temp
+    #print(max_sp)
+    #if max_sp:
+        #print(max_part_datasets)
     return max_attr, max_sp, max_part_datasets, attr_values
 
 
@@ -104,7 +110,7 @@ def gen_random_tree(dataset, attributes, depth_limit, depth=1):
             else:
                 child_n = gen_random_tree(dataset_v, next_attributes, depth_limit, depth=depth+1)
                 if max_sp != None:
-                    N.sp_side = ("<=" if i == 0 else ">")
+                    N.sp_side = "<="
                     child_n.attr_value = ("Yes" if i == 0 else "No")
                 else:
                     child_n.attr_value = dataset_v[A].value_counts().idxmax()
