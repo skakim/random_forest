@@ -19,6 +19,10 @@ def info_a(dataset, part_datasets):
 
 
 def choose_attribute(dataset, attributes):  # Information Gain (ID3)
+    """
+    dataset: pandas dataframe  
+    attributes: dict {attribute: [type,possible_values]} type = numerical, categorical, binary
+    """
     max_gain = 0.0
     max_part_datasets = []
     max_attr = ''
@@ -26,7 +30,7 @@ def choose_attribute(dataset, attributes):  # Information Gain (ID3)
     info_d = info(dataset)
     attr_values = []
     for attr in attributes.keys():
-        if attributes[attr][0] == 'numerical':
+        if attributes[attr][0] == 'numerical': # numerical attributes -> splitpoint choice
             dataset = dataset.sort_values(attr)
             values = list(map(float, dataset[attr]))
             classes = list(dataset['y'])
@@ -35,21 +39,18 @@ def choose_attribute(dataset, attributes):  # Information Gain (ID3)
                 if classes[i] != classes[i + 1]:
                     possible_split_points.append(
                         (values[i] + values[i + 1]) / 2.0)
-            #print(dataset)
-            #print(attr, possible_split_points)
             for sp in possible_split_points:
                 part_datasets = []
                 part_datasets.append(dataset[dataset[attr] <= sp])
                 part_datasets.append(dataset[dataset[attr] > sp])
                 gain = info_d - info_a(dataset, part_datasets)
-                #print(sp, info_d, info_a(dataset, part_datasets), gain)
                 if gain > max_gain:
                     max_gain = gain
                     max_part_datasets = part_datasets
                     max_attr = attr
                     max_sp = sp
                     attr_values = ["Yes", "No"]
-        else:  # categorical or binary
+        else:  # categorical or binary -> branch for each possibility
             part_datasets = []
             temp = []
             for v in attributes[attr][1]:
@@ -62,9 +63,6 @@ def choose_attribute(dataset, attributes):  # Information Gain (ID3)
                 max_attr = attr
                 max_sp = None
                 attr_values = temp
-    #print(max_sp)
-    #if max_sp:
-        #print(max_part_datasets)
     return max_attr, max_sp, max_part_datasets, attr_values
 
 
@@ -125,7 +123,7 @@ class RandomTree:
         self.random_tree = gen_random_tree(dataset, attributes, depth_limit=depth_limit)
         self.attributes = attributes
 
-    def print_tree(self):  # TODO: make print_tree prettier
+    def print_tree(self):
         queue = [[self.random_tree, 0]]
         while queue:
             q = queue.pop()
@@ -224,6 +222,6 @@ if __name__ == "__main__":
     RT.print_tree()
 
     print(RT.classify({'Tempo': 'Ensolarado',
-                       'Graus': 29.5, 'Umidade': 'Alta'}, stdout=True))
+                       'Graus': 29.5, 'Umidade': 'Normal'}, stdout=True))
     print(RT.classify({'Tempo': 'Chuvoso', 'Graus': 12.5,
                        'Umidade': 'Alta'}, stdout=True))

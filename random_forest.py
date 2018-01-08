@@ -27,13 +27,7 @@ def gen_random_forest(dataset, attributes, ntrees, nattributes, depth_limit=None
     :param attributes: the attributes dict
     :param ntrees: int, number of trees
     :param nattributes: int, number of attributes of each tree (aka. "m")
-    Algorithm in slide 32 aula 16
-    Probably will be something like:
-        random_forest = []
-        for _ in ntrees:
-            tree_dataset, tree_attributes = select_attributes(bootstrap(dataset),attributes, nattributes)
-            rt = RandomTree(tree_dataset, tree_attributes)
-            random_forest.append(rt)
+    Algorithm in slide 32 class 16
     """
     return [RandomTree(*select_attributes(bootstrap(dataset), attributes, nattributes),depth_limit=depth_limit) for _ in range(0, ntrees)]
 
@@ -49,10 +43,9 @@ class RandomForest:
     def classify(self, instance, stdout=False):
         """
         :param instance: a instance
-        :param stdout: if stdout == True, print voting result (para debug)
+        :param stdout: if stdout == True, print voting result (debug)
         return class
-        Look at random_tree classify, probably will be a loop calling rt.classify for each RT and return who wins the voting
-        In case of a tie in the voting, use a coinflip between the 'y' values that have tied (random.choice?)
+        In case of a tie in the voting, use a coinflip (random.choice()) between the 'y' values that have tied
         """
         votes = Counter([tree.classify(instance, stdout) for tree in self.random_forest]).most_common()
         if stdout:

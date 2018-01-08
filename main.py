@@ -97,10 +97,8 @@ def holdout(dataset, percentage_train):
         sub_test_dataset = sub_dataset.drop(sub_train_dataset.index)
         sub_train_datasets.append(sub_train_dataset)
         sub_test_datasets.append(sub_test_dataset)
-        # print(y_value,len(sub_dataset),len(sub_train_dataset),len(sub_test_dataset))
     train_dataset = pd.concat(sub_train_datasets)
     test_dataset = pd.concat(sub_test_datasets)
-    # print(len(train_dataset),len(test_dataset),len(train_dataset)/len(dataset))
     return (train_dataset, test_dataset)
 
 
@@ -121,10 +119,8 @@ def cross_validation(dataset, attributes, percentage_train, folds, ntrees, nattr
     precisions = []
     recalls = []
     for fold in range(1, folds + 1):
-        # print("Iteration",fold)
         train_dataset, test_dataset = holdout(dataset, percentage_train)
         rf = RandomForest(train_dataset, attributes, ntrees, nattributes, depth_limit)
-        #[rt.print_tree() for rt in rf.random_forest]
         accuracy, precision, recall = test_RF(rf, test_dataset)
         accuracies.append(accuracy)
         precisions.append(precision)
@@ -153,7 +149,6 @@ def precision(cm):
             false_positive = sum(cm[:, i]) - cm[i, i]
             if true_positive + false_positive != 0.0:
                 p = true_positive / (true_positive + false_positive)
-                # print("precision\n", cm, true_positive,false_positive,p)
                 acc += p
         acc = acc / len(cm)
 
@@ -175,7 +170,6 @@ def recall(cm):
             false_negative = sum(cm[i, :]) - cm[i, i]
             if true_positive + false_negative != 0.0:
                 r = true_positive / (true_positive + false_negative)
-                # print("recall\n", cm, true_positive, false_negative, r)
                 acc += r
         acc = acc / len(cm)
     return acc
@@ -188,19 +182,14 @@ def test_RF(RF, test_dataset):
     :return: the performance of the RF
     """
     classes = list(set(test_dataset['y']))
-    # print(classes)
     confusion_matrix = [[0.0] * len(classes) for _ in range(len(classes))]
     test_dataset = test_dataset.transpose().to_dict()
     number_of_instances = len(test_dataset)
     for instance in test_dataset.values():
         expected = instance['y']
-        #print(instance)
         y = RF.classify(instance,stdout=False)
         if y != None:
             confusion_matrix[classes.index(expected)][classes.index(y)] += 1
-    #print(confusion_matrix, accuracy(confusion_matrix, number_of_instances),
-    #        precision(confusion_matrix),
-    #        recall(confusion_matrix))
     return (accuracy(confusion_matrix, number_of_instances),
             precision(confusion_matrix),
             recall(confusion_matrix))
@@ -254,10 +243,6 @@ if __name__ == "__main__":
     n_trees = [1,5,10,25,50]
     for n in n_trees:
         print("#trees =", n)
-        # print("depth_limit")
-        # print_cross_validation(cross_validation(
-        #    dataset, attributes, 0.8, 5, n, depth_limit=10))
-        # print("no depth_limit")
         print_cross_validation(cross_validation(
             dataset, attributes, 0.8, 5, n))
 
